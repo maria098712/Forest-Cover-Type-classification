@@ -1,0 +1,35 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.datasets import fetch_covtype
+from sklearn.model_selection import train_test_split , GridSearchCV, cross_val_score
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+%matplotlib inline
+#load the built in dataset
+data=fetch_covtype()
+x=pd.DataFrame(data.data,columns=[f'clue{i}' for i in range(data.data.shape[1])])
+y=pd.Series(data.target, name='forest_Type')
+df=pd.concat([x,y],axis=1)
+print( "data Size:" ,df.shape)
+print("\nTypes of Clues:\n", df.dtypes)
+print("\nany missing stuff" , df.isnull().sum().sum())
+print("\nHow Many of Each Forest Type?\n",y.value_counts(normalize=True))
+print("\nFirst Look at Data:\n", df.head())
+scaler = StandardScaler()
+x.iloc[:, :10] = scaler.fit_transform(x.iloc[:, :10])
+
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+print("\nPractice Data Size:", X_train.shape)
+print("Test Data Size:", X_test.shape)
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+rf_model.fit(X_train, y_train)
+# Test Random Forest
+rf_y_pred = rf_model.predict(X_test)
+rf_accuracy = accuracy_score(y_test, rf_y_pred)
+print("\nRandom Forest Accuracy:", rf_accuracy)
+print("Random Forest Report:\n", classification_report(y_test, rf_y_pred))
